@@ -23,6 +23,12 @@
     "test": "jest && jest-it-up",
     "test:watch": "jest --watch"
   },
+  "dependencies": {
+    "@ethereumjs/util": "^8.0.3",
+    "@metamask/eth-sig-util": "^5.0.2",
+    "@metamask/scure-bip39": "^2.1.0",
+    "ethereum-cryptography": "^1.1.2"
+  },
   "devDependencies": {
     "@lavamoat/allow-scripts": "^2.0.3",
     "@metamask/auto-changelog": "^3.1.0",
@@ -61,7 +67,9 @@
   },
   "lavamoat": {
     "allowScripts": {
-      "@lavamoat/preinstall-always-fail": false
+      "@lavamoat/preinstall-always-fail": false,
+      "@metamask/eth-hd-keyring>ethereumjs-util>ethereum-cryptography>keccak": false,
+      "@metamask/eth-hd-keyring>ethereumjs-util>ethereum-cryptography>secp256k1": false
     }
   }
 }
