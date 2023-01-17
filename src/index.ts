@@ -15,6 +15,8 @@ const type = 'HD Key Tree';
 type HdKeyringOpts = {
   type: string;
   _wallets: any[];
+  root: string | null;
+  // mnemonic: Mnemonic;
 };
 
 type KeyringOptions = {
@@ -23,18 +25,21 @@ type KeyringOptions = {
 };
 
 type Mnemonic = {
-  type: string;
+  type: string | Array<number> | Buffer;
   data: string;
 };
 
 export default class HdKeyring implements HdKeyringOpts {
   type: string;
-
+  root: string | null;
   _wallets: any[]; // TODO: figure out what type this is
+  mnemonic: Mnemonic | null;
 
   constructor() {
     this.type = type;
     this._wallets = [];
+    this.root = null;
+    this.mnemonic = null;
   }
 
   _stringToUint8Array(mnemonic: string) {
@@ -91,6 +96,29 @@ export default class HdKeyring implements HdKeyringOpts {
     }
 
     return wallet;
+  }
+
+  _initFromMnemonic(mnemonic: Mnemonic['type']) {
+    if (this.root) {
+      throw new Error(
+        'Eth-Hd-Keyring: Secret recovery phrase already provided',
+      );
+    }
+
+    this.mnemonic = this._mnemonicToUint8Array(mnemonic);
+
+    // validate before initializing
+    const isValid = bip39.validateMnemonic(this.mnemonic, wordlist);
+    if (!isValid) {
+      throw new Error(
+        'Eth-Hd-Keyring: Invalid secret recovery phrase provided',
+      );
+    }
+
+    // eslint-disable-next-line node/no-sync
+    const seed = bip39.mnemonicToSeedSync(this.mnemonic, wordlist);
+    this.hdWallet = HDKey.fromMasterSeed(seed);
+    this.root = this.hdWallet.derive(this.hdPath);
   }
 
   // small helper function to convert publicKey in Uint8Array form to a publicAddress as a hex
