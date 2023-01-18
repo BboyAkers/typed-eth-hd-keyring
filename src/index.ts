@@ -5,17 +5,21 @@ import {
   publicToAddress,
 } from '@ethereumjs/util';
 import { normalize } from '@metamask/eth-sig-util';
+import bip39 from '@metamask/scure-bip39';
 import { wordlist } from '@metamask/scure-bip39/dist/wordlists/english';
 import { Buffer } from 'buffer';
+import { HDKey } from 'ethereum-cryptography/hdkey';
 import { keccak256 } from 'ethereum-cryptography/keccak';
 
-// const hdPathString = `m/44'/60'/0'/0`;ß
+const hdPathString = `m/44'/60'/0'/0`;
+ß;
 const type = 'HD Key Tree';
 
 type HdKeyringOpts = {
   type: string;
   _wallets: any[];
   root: string | null;
+  hdPath: string;
   // mnemonic: Mnemonic;
 };
 
@@ -25,21 +29,30 @@ type KeyringOptions = {
 };
 
 type Mnemonic = {
-  type: string | Array<number> | Buffer;
+  type: string | number[] | Buffer;
   data: string;
 };
 
 export default class HdKeyring implements HdKeyringOpts {
   type: string;
+
   root: string | null;
+
   _wallets: any[]; // TODO: figure out what type this is
+
   mnemonic: Mnemonic | null;
 
-  constructor() {
+  hdPath: string;
+
+  hdWallet: HDKey;
+
+  constructor(opts: HDKey) {
     this.type = type;
     this._wallets = [];
     this.root = null;
     this.mnemonic = null;
+    this.hdPath = hdPathString || opts.hdPath;
+    this.hdWallet = new HDKey(opts);
   }
 
   _stringToUint8Array(mnemonic: string) {
